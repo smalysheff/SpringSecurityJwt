@@ -1,0 +1,19 @@
+server:
+  port: 8081
+
+spring:
+  datasource:
+    driver-class-name: org.postgresql.Driver
+    url: jdbc:postgresql://localhost:5432/jwtdemo
+    username: postgres
+    password: 9874123
+  jpa:
+    show-sql: true
+    hibernate:
+      ddl-auto: update
+  jooq:
+    sql-dialect: org.hibernate.dialect.PostgreSQLDialect
+
+app:
+  jwtSecret: MySecretTokenTestSecuritySpringBootApplicationMySecretTokenTestSecuritySpringBootApplication
+  jwtExpirationMs: 86400000
