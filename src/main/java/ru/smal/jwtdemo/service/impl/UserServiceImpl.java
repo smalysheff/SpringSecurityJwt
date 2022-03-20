@@ -9,6 +9,7 @@ import ru.smal.jwtdemo.controller.dto.response.MessageResponse;
 import ru.smal.jwtdemo.entity.Role;
 import ru.smal.jwtdemo.entity.User;
 import ru.smal.jwtdemo.enums.RoleEnum;
+import ru.smal.jwtdemo.mapper.user.UserMapper;
 import ru.smal.jwtdemo.repository.RoleRepository;
 import ru.smal.jwtdemo.repository.UserRepository;
 import ru.smal.jwtdemo.service.UserService;
@@ -23,7 +24,7 @@ public class UserServiceImpl implements UserService {
 
     private final UserRepository userRepository;
     private final RoleRepository roleRepository;
-    private final PasswordEncoder passwordEncoder;
+    private final UserMapper userMapper;
 
     @Override
     public MessageResponse saveUser(SignUpRequest signupRequest) {
@@ -34,10 +35,18 @@ public class UserServiceImpl implements UserService {
             return new MessageResponse("Error: Email is exist");
         }
 
-        User user = new User(signupRequest.username(), signupRequest.email(), passwordEncoder.encode(signupRequest.password()));
+        User user = userMapper.map(signupRequest);
         Set<String> reqRoles = signupRequest.roles();
         Set<Role> roles = new HashSet<>();
 
+        extracted(reqRoles, roles);
+
+        user.setRoles(roles);
+        userRepository.save(user);
+        return new MessageResponse("CREATED with id: " + user.getId());
+    }
+
+    private void extracted(Set<String> reqRoles, Set<Role> roles) {
         if (reqRoles == null) {
             Role role = roleRepository.findByName(RoleEnum.ROLE_USER)
                     .orElseThrow(() -> new RuntimeException("Error, Role USER is not found"));
@@ -63,9 +72,6 @@ public class UserServiceImpl implements UserService {
                 }
             });
         }
-        user.setRoles(roles);
-        userRepository.save(user);
-        return new MessageResponse("CREATED" + user);
     }
 
     @Override
